@@ -1,4 +1,11 @@
 
+import { useAuth } from "@/contexts/AuthContext";
+import { useSubjects } from "@/hooks/useSubjects";
+import { useLessons } from "@/hooks/useLessons";
+import { useUserProgress } from "@/hooks/useUserProgress";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { BookOpen, Users, Brain, Award, TrendingUp, Clock } from "lucide-react";
 
 interface DashboardProps {
@@ -6,110 +13,136 @@ interface DashboardProps {
 }
 
 export const Dashboard = ({ onNavigate }: DashboardProps) => {
-  const stats = [
-    { label: "Subjects", value: "6", icon: BookOpen, color: "bg-blue-500" },
-    { label: "Lessons Completed", value: "24", icon: Award, color: "bg-green-500" },
-    { label: "Study Sessions", value: "12", icon: Clock, color: "bg-purple-500" },
-    { label: "Peer Connections", value: "8", icon: Users, color: "bg-orange-500" },
-  ];
+  const { user } = useAuth();
+  const { data: subjects } = useSubjects();
+  const { data: lessons } = useLessons();
+  const { data: userProgress } = useUserProgress();
 
-  const quickActions = [
-    {
-      title: "Continue Math",
-      subtitle: "Algebra - Chapter 3",
-      action: () => onNavigate("lessons"),
-      color: "from-blue-500 to-blue-600",
-    },
-    {
-      title: "AI Tutor Help",
-      subtitle: "Get instant answers",
-      action: () => onNavigate("ai-tutor"),
-      color: "from-purple-500 to-purple-600",
-    },
-    {
-      title: "Join Study Room",
-      subtitle: "Physics discussion",
-      action: () => onNavigate("peer-rooms"),
-      color: "from-green-500 to-green-600",
-    },
-    {
-      title: "Take Quiz",
-      subtitle: "Science - Week 2",
-      action: () => onNavigate("quizzes"),
-      color: "from-orange-500 to-orange-600",
-    },
-  ];
+  const completedLessons = userProgress?.filter(p => p.status === 'completed').length || 0;
+  const totalLessons = lessons?.length || 0;
+  const progressPercentage = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+
+  const recentLessons = lessons?.slice(0, 3) || [];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Welcome back, Student! 👋
-        </h1>
-        <p className="text-gray-600">Ready to learn something new today?</p>
-      </div>
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {stats.map((stat, index) => {
-          const Icon = stat.icon;
-          return (
-            <div
-              key={stat.label}
-              className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200 animate-fade-in"
-              style={{ animationDelay: `${index * 100}ms` }}
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">{stat.label}</p>
-                  <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-                </div>
-                <div className={`${stat.color} p-3 rounded-lg`}>
-                  <Icon className="h-6 w-6 text-white" />
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Quick Actions */}
-      <div className="mb-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {quickActions.map((action, index) => (
-            <button
-              key={action.title}
-              onClick={action.action}
-              className={`bg-gradient-to-br ${action.color} p-6 rounded-xl text-white hover:scale-105 transition-all duration-200 animate-fade-in`}
-              style={{ animationDelay: `${(index + 4) * 100}ms` }}
-            >
-              <h3 className="font-semibold mb-1">{action.title}</h3>
-              <p className="text-sm opacity-90">{action.subtitle}</p>
-            </button>
-          ))}
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-6">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Welcome back, {user?.user_metadata?.full_name || 'Student'}! 👋
+          </h1>
+          <p className="text-gray-600">Ready to continue your learning journey?</p>
         </div>
-      </div>
 
-      {/* Recent Activity */}
-      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Recent Activity</h2>
-        <div className="space-y-4">
-          {[
-            { action: "Completed", subject: "Math - Quadratic Equations", time: "2 hours ago" },
-            { action: "Started", subject: "Science - Chemical Bonds", time: "Yesterday" },
-            { action: "Joined", subject: "Physics Study Room", time: "2 days ago" },
-          ].map((activity, index) => (
-            <div key={index} className="flex items-center space-x-4 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-              <div className="flex-1">
-                <p className="text-sm">
-                  <span className="font-medium">{activity.action}</span> {activity.subject}
-                </p>
-                <p className="text-xs text-gray-500">{activity.time}</p>
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Subjects</CardTitle>
+              <BookOpen className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{subjects?.length || 0}</div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Lessons Completed</CardTitle>
+              <Award className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{completedLessons}</div>
+              <p className="text-xs text-muted-foreground">
+                of {totalLessons} total lessons
+              </p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Progress</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{progressPercentage}%</div>
+              <Progress value={progressPercentage} className="mt-2" />
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Study Time</CardTitle>
+              <Clock className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {Math.round(completedLessons * 20)}min
               </div>
-            </div>
-          ))}
+              <p className="text-xs text-muted-foreground">
+                this week
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <Card>
+            <CardHeader>
+              <CardTitle>Continue Learning</CardTitle>
+              <CardDescription>Pick up where you left off</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {recentLessons.map((lesson) => (
+                <div key={lesson.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div>
+                    <h4 className="font-medium">{lesson.title}</h4>
+                    <p className="text-sm text-gray-600">{lesson.duration} minutes</p>
+                  </div>
+                  <Button 
+                    size="sm" 
+                    onClick={() => onNavigate('lessons')}
+                  >
+                    Continue
+                  </Button>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Quick Actions</CardTitle>
+              <CardDescription>Jump to your favorite features</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Button 
+                className="w-full justify-start" 
+                variant="outline"
+                onClick={() => onNavigate('ai-tutor')}
+              >
+                <Brain className="mr-2 h-4 w-4" />
+                Ask AI Tutor
+              </Button>
+              <Button 
+                className="w-full justify-start" 
+                variant="outline"
+                onClick={() => onNavigate('quizzes')}
+              >
+                <Award className="mr-2 h-4 w-4" />
+                Take a Quiz
+              </Button>
+              <Button 
+                className="w-full justify-start" 
+                variant="outline"
+                onClick={() => onNavigate('peer-rooms')}
+              >
+                <Users className="mr-2 h-4 w-4" />
+                Join Study Room
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

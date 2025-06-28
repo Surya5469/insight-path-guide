@@ -1,5 +1,6 @@
 
 import { BookOpen, Users, Brain, MessageSquare, Award, Home } from "lucide-react";
+import { UserMenu } from "./UserMenu";
 
 interface NavigationProps {
   activeSection: string;
@@ -29,24 +30,27 @@ export const Navigation = ({ activeSection, onNavigate }: NavigationProps) => {
             </h1>
           </div>
           
-          <div className="flex space-x-1">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => onNavigate(item.id)}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 ${
-                    activeSection === item.id
-                      ? "bg-blue-100 text-blue-700 shadow-sm"
-                      : "text-gray-600 hover:text-blue-600 hover:bg-gray-50"
-                  }`}
-                >
-                  <Icon className="h-4 w-4" />
-                  <span className="font-medium">{item.label}</span>
-                </button>
-              );
-            })}
+          <div className="flex items-center space-x-1">
+            <div className="flex space-x-1">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => onNavigate(item.id)}
+                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 ${
+                      activeSection === item.id
+                        ? "bg-blue-100 text-blue-700 shadow-sm"
+                        : "text-gray-600 hover:text-blue-600 hover:bg-gray-50"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    <span className="font-medium">{item.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+            <UserMenu />
           </div>
         </div>
       </div>
